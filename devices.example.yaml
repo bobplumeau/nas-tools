@@ -1,0 +1,28 @@
+# AI-Assisted: Generated with assistance from AI tools.
+# Copy this file to devices.yaml (gitignored) and fill in real connection details.
+# devices.yaml is intentionally not committed since it may contain lab-specific
+# IPs/hostnames for bench hardware.
+
+devices:
+  bench_nas_01:
+    # Either a single IP, or a list of candidates probed in order (useful when a bench
+    # unit may come up on one of several known addresses). The first to answer is used.
+    nas_ip:
+      - 192.0.2.11
+      - 192.0.2.10
+    # Set to null if the NAS is directly reachable from this machine (no jump host
+    # needed). May be a user@host or an alias defined in ~/.ssh/config, e.g. bench-jump.
+    jump_host: null
+    ssh_user: admin
+    # Name of an environment variable holding the SSH/NAS admin password.
+    # Never put the password directly in this file.
+    ssh_password_env: NAS_T_SSH_PASSWORD  # pragma: allowlist secret
+    # Name of an env var holding the sudo password, if it differs from the SSH one.
+    # Omit to reuse the SSH password. Needed for vendor: qnap (getsysinfo wants sudo).
+    # sudo_password_env: NAS_T_SUDO_PASSWORD  # pragma: allowlist secret
+    # "qnap" collects temps/health via the built-in getsysinfo (QTS units often ship no
+    # smartctl at all); any other value uses smartctl.
+    vendor: qnap
+    # Interface to sample throughput on (e.g. eth0, bond0 for a 10GbE bond).
+    # Omit to let NAS_T auto-detect the busiest non-loopback interface.
+    network_interface: eth0

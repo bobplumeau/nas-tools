@@ -1,0 +1,25 @@
+[project]
+name = "nas_t"
+version = "0.2.0"
+description = "CLI tool for testing NAS units: temperature/SMART monitoring, write load, and CPU thermal-interface tests."
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+    "typer>=0.9.0",
+    "rich>=13.0.0",
+    "pyyaml>=6.0",
+    # Provides the `readline` module the interactive shell uses; built into Python elsewhere.
+    "pyreadline3>=3.4.1,<4; sys_platform == 'win32'",
+]
+
+[project.optional-dependencies]
+plot = ["matplotlib>=3.7", "numpy>=1.24"]
+dev = ["pytest>=7.0", "matplotlib>=3.7", "numpy>=1.24"]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+nas_t = "main:app"
