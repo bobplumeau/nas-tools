@@ -28,6 +28,8 @@ class DeviceProfile:
     # Interface to sample throughput on (e.g. eth0, bond0). If unset, NAS-T picks the
     # non-loopback interface carrying the most received traffic.
     network_interface: Optional[str] = None
+    # MAC address of the NAS NIC, for `nas_t wake` (Wake-on-LAN).
+    mac: Optional[str] = None
     # Populated once a candidate IP has been probed successfully, so the rest of the run
     # sticks to the address that actually answered.
     active_ip: Optional[str] = field(default=None, init=False, repr=False, compare=False)

@@ -44,7 +44,7 @@ class TestCpuLoad(unittest.TestCase):
     def test_stop_confirms_nothing_left(self):
         with mock.patch("nas_t.cpu_load.run_remote_command", return_value=ok("0 0\n")):
             self.assertTrue(cpu_load.stop_cpu_load(device()).ok)
-        with mock.patch("nas_t.cpu_load.run_remote_command", return_value=ok("0 2\n")):
+        with mock.patch("nas_t.cpu_load.run_remote_command", return_value=ok("1 1\n")):
             self.assertFalse(cpu_load.stop_cpu_load(device()).ok)
 
     def test_poweroff_sends_password_on_stdin_only(self):

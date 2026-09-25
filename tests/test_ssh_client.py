@@ -122,6 +122,17 @@ class TestRunRemoteCommandWindows(unittest.TestCase):
         self.assertNotIn("ControlMaster=auto", " ".join(args[0]))
 
 
+class TestStdinIsSentVerbatim(unittest.TestCase):
+    def test_script_newlines_are_not_translated(self):
+        device = DeviceProfile(name="test", nas_ip="192.0.2.1", ssh_user="admin")
+        with mock.patch("nas_t.ssh_client.subprocess.run") as mock_run:
+            mock_run.return_value = mock.Mock(returncode=0, stdout=b"ok\r\n", stderr=b"")
+            result = run_remote_command(device, "cat > /tmp/x.sh", stdin_data="a\nb\n")
+        self.assertEqual(mock_run.call_args.kwargs["input"], b"a\nb\n")
+        self.assertNotIn("text", mock_run.call_args.kwargs)
+        self.assertEqual(result.stdout, "ok\n")
+
+
 class TestCandidateIpProbing(unittest.TestCase):
     def _device(self) -> DeviceProfile:
         return DeviceProfile(name="test", nas_ip=["192.0.2.10", "192.0.2.11"], ssh_user="admin")

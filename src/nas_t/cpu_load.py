@@ -37,10 +37,12 @@ sleep "$2" & s=$!; wait $s
 cleanup
 """
 
-# The bracketed grep patterns keep grep from counting this command's own process.
+# Reports "<scripts still running> <pid file still present>"; the script's TERM trap kills
+# its own workers and removes the pid file. Only counts this tool's processes, so other
+# load on the NAS doesn't confuse it. The bracketed pattern keeps grep from matching itself.
 _STOP_COMMAND = (
     f"[ -f {REMOTE_PIDS} ] && kill $(cat {REMOTE_PIDS}) 2>/dev/null; sleep 1; "
-    "echo $(ps | grep -c '[n]as_t_cpuburn.sh') $(ps | grep -c '[y]es')"
+    f"echo $(ps | grep -c '[n]as_t_cpuburn.sh') $([ -f {REMOTE_PIDS} ] && echo 1 || echo 0)"
 )
 
 _POWEROFF_COMMAND = 'read -r NAS_T_PW; echo "$NAS_T_PW" | sudo -S -p "" /sbin/poweroff'
@@ -86,7 +88,7 @@ def stop_cpu_load(device: DeviceProfile) -> LoadResult:
     counts = result.stdout.strip().splitlines()[-1].split() if result.stdout.strip() else []
     if len(counts) != 2:
         return LoadResult(False, f"could not confirm stop: {result.stderr.strip()}")
-    return LoadResult(counts == ["0", "0"], f"scripts left: {counts[0]}, workers left: {counts[1]}")
+    return LoadResult(counts == ["0", "0"], f"scripts left: {counts[0]}, pid file left: {counts[1]}")
 
 
 def poweroff(device: DeviceProfile) -> LoadResult:

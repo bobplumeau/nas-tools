@@ -1,6 +1,6 @@
 [project]
 name = "nas_t"
-version = "0.2.0"
+version = "0.2.1"
 description = "CLI tool for testing NAS units: temperature/SMART monitoring, write load, and CPU thermal-interface tests."
 readme = "README.md"
 requires-python = ">=3.10"

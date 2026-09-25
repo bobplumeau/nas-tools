@@ -63,7 +63,8 @@ started a few minutes after boot):
 
 ```sh
 nas_t cpu-test --device bench_nas_01 --label "1 layer PTM7950" --shutdown-after
-# next day, after rebuilding:
+# next day, after rebuilding (wake powers it on over the network if WoL is set up):
+nas_t wake --device bench_nas_01
 nas_t cpu-test --device bench_nas_01 --label "2 layers PTM7950" --shutdown-after
 nas_t compare results/cpu_20260924_1552 results/cpu_20260925_0900
 ```
@@ -105,6 +106,7 @@ updated `load_stop` if soak ended the load early).
 | `load` | Field-like write load: copies a real capture file onto a mounted share on an interval |
 | `fio-load` | Synthetic sequential write load via `fio` (Linux) |
 | `test` | `log` + a loader together with a live dashboard (`smart_log.csv`, `network_log.csv`) |
+| `wake` | Power the NAS on with Wake-on-LAN (needs `mac:` in devices.yaml and WoL enabled in QTS), then wait for SSH |
 
 On Windows, `load`/`test --loader replay` accept a UNC path for `--mount-path`, e.g.
 `\\nas\Public\nas_t_load` (map it first with `net use`).

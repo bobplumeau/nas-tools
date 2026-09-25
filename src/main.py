@@ -496,6 +496,45 @@ def cpu_stop(
     print(("[green]Stopped.[/green] " if result.ok else "[red]Not confirmed.[/red] ") + result.detail)
 
 
+@app.command(rich_help_panel="Main Commands")
+def wake(
+    device: Annotated[str, typer.Option(help="Device name from devices.yaml (needs a `mac:` entry)")],
+    wait: Annotated[int, typer.Option(help="Seconds to wait for SSH to come up (0 = don't wait)")] = 300,
+    devices_file: Annotated[
+        Optional[Path], typer.Option(help="Path to devices.yaml")
+    ] = _DEFAULT_DEVICES_FILE,
+) -> None:
+    """Power the NAS on with Wake-on-LAN, then wait until it accepts SSH."""
+    import socket
+
+    from nas_t.config import get_device
+    from nas_t.wol import broadcast_targets, send_magic_packet
+
+    profile = get_device(devices_file, device)
+    if not profile.mac:
+        print(f"[red]No `mac:` for {device} in devices.yaml.[/red] Find it on the NAS label or in "
+              "QTS Control Panel > Network & Virtual Switch.")
+        raise typer.Exit(code=1)
+    sent = send_magic_packet(profile.mac, broadcast_targets(profile.candidate_ips))
+    print(f"Magic packet sent to {profile.mac} ({sent} broadcasts)")
+    if wait <= 0:
+        return
+    print(f"Waiting up to {wait}s for SSH (boot takes a minute or two)...")
+    start = time.monotonic()
+    while time.monotonic() - start < wait:
+        for ip in profile.candidate_ips:
+            try:
+                with socket.create_connection((ip, 22), timeout=2):
+                    print(f"[green]{device} is up at {ip} after {time.monotonic() - start:.0f}s[/green]")
+                    return
+            except OSError:
+                pass
+        time.sleep(5)
+    print(f"[red]{device} didn't answer on SSH within {wait}s[/red] - check WoL is enabled and "
+          "that this machine is on the NAS's local network.")
+    raise typer.Exit(code=1)
+
+
 @app.command(rich_help_panel="CPU Thermal Tests")
 def plot(
     run_dir: Annotated[Path, typer.Argument(help="Run folder containing smart_log.csv")],

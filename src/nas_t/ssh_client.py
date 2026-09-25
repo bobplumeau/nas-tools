@@ -128,8 +128,14 @@ def _run(
             args = ["sshpass", "-e"] + args
             env = {**os.environ, "SSHPASS": password}
     try:
+        # Bytes, not text=True: text mode on Windows rewrites "\n" as "\r\n" in stdin,
+        # which breaks shell scripts piped to the NAS (sh sees "\r" in every line).
         proc = subprocess.run(
-            args, capture_output=True, text=True, timeout=timeout, env=env, input=stdin_data
+            args,
+            capture_output=True,
+            timeout=timeout,
+            env=env,
+            input=stdin_data.encode() if stdin_data is not None else None,
         )
     except subprocess.TimeoutExpired:
         return SshResult(exit_code=124, stdout="", stderr=f"timed out after {timeout}s")
@@ -137,7 +143,13 @@ def _run(
         missing = exc.filename or args[0]
         hint = " (install it with: sudo apt install sshpass)" if missing == "sshpass" else ""
         return SshResult(exit_code=127, stdout="", stderr=f"{missing} not found{hint}")
-    return SshResult(exit_code=proc.returncode, stdout=proc.stdout, stderr=proc.stderr)
+    return SshResult(exit_code=proc.returncode, stdout=_text(proc.stdout), stderr=_text(proc.stderr))
+
+
+def _text(data) -> str:
+    if isinstance(data, bytes):
+        data = data.decode("utf-8", errors="replace")
+    return (data or "").replace("\r\n", "\n")
 
 
 def resolve_target_ip_with_errors(

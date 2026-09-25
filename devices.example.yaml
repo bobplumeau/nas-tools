@@ -26,3 +26,5 @@ devices:
     # Interface to sample throughput on (e.g. eth0, bond0 for a 10GbE bond).
     # Omit to let NAS_T auto-detect the busiest non-loopback interface.
     network_interface: eth0
+    # NIC MAC address, for `nas_t wake` (Wake-on-LAN; enable WoL in QTS first).
+    # mac: 00:00:5e:00:53:01
